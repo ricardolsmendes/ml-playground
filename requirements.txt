@@ -1,0 +1,5 @@
+matplotlib ~=3.6.3
+notebook ~=6.5.2
+pandas ~=1.5.3
+scikit-learn ~=1.2.1
+seaborn ~=0.12.2
