@@ -1,4 +1,4 @@
-# Datasets for Large Language Model exploratory work
+# Datasets for Large Language Models
 
 ## 1. Medical Cost Personal Datasets
 
