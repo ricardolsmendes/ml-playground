@@ -1,8 +1,8 @@
-# Large Language Models playground 
+# Large Language Models playground
 
-## Usage instructions
+## Scripts
 
-### - `analyse-insurance-data.py` script
+### - `analyse-insurance-data.py`
 
 1. `cd large-language-models`
 2. `touch .env`
