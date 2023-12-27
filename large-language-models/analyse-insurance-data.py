@@ -9,6 +9,7 @@ import sqlalchemy
 
 dotenv.load_dotenv()
 
+# Utility block to extract content from a CSV file and load it into a SQLite table.
 conn = sqlite3.connect("insurance.db")
 df = pd.read_csv("datasets/insurance.csv")
 df.to_sql("insurance", conn, if_exists="replace", index=False)
@@ -39,4 +40,4 @@ executor = agents.create_sql_agent(
     verbose=True,
 )
 result = executor.run(question)
-print(f"\n\nTHE ANSWER TO YOUR QUESTION IS:\n{result}")
+print(f"\nTHE ANSWER TO YOUR QUESTION IS:\n{result}\n")
