@@ -4,7 +4,7 @@
 
 1. `cd large-language-models`
 2. `touch .env`
-3. Add an `OPENAI_API_KEY` variable to the `.env` file.
+3. Set up an OpenAI API key by adding an `OPENAI_API_KEY=<YOUR-KEY>` line to the `.env` file.
 4. `python analyse-insurance-data.py`
 
 The expected output is:
