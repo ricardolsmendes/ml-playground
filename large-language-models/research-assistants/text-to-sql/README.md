@@ -1,8 +1,8 @@
-# SQL Research Assistants powered by Large Language Models
+# Text to SQL Research Assistants powered by Large Language Models
 
 ## Insurance Data Analyser
 
-1. `cd large-language-models/research-assistants/sql`
+1. `cd large-language-models/research-assistants/text-to-sql`
 2. `touch .env`
 3. Set up an OpenAI API key by adding an `OPENAI_API_KEY=<YOUR-KEY>` line to the `.env` file.
 4. `python analyse-insurance-data.py`
