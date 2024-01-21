@@ -4,7 +4,7 @@ from typing import Any
 
 import dotenv
 import langchain
-from langchain_community import llms, utilities
+from langchain_community import utilities
 from langchain_experimental import sql
 import langchain_openai
 import pandas as pd
@@ -65,7 +65,7 @@ class ModelFactory:
             random.
         :return: the OpenAI model
         """
-        return llms.OpenAI(temperature=temperature)
+        return langchain_openai.OpenAI(temperature=temperature)
 
 
 dotenv.load_dotenv()
