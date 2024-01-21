@@ -1,8 +1,9 @@
 import sqlite3
 
 import dotenv
-from langchain import agents, llms, sql_database
-from langchain.agents import agent_toolkits
+from langchain import agents, sql_database
+from langchain_community import agent_toolkits
+import langchain_openai
 import pandas as pd
 import sqlalchemy
 
@@ -21,17 +22,17 @@ db_engine = sqlalchemy.create_engine("sqlite:///insurance.db")
 # A lower temperature will result in more predictable output, while a higher temperature
 # will result in more random output. The temperature parameter is set between 0 and 1,
 # with 0 being the most predictable and 1 being the most random.
-llm = llms.OpenAI(temperature=0)
+llm = langchain_openai.OpenAI(temperature=0)
 toolkit = agent_toolkits.SQLDatabaseToolkit(
     db=sql_database.SQLDatabase(db_engine), llm=llm
 )
 
-question = (
+questions = (
     "What is the highest charge?"
     " What is the average charge?"
     " What is the group that spends more, male of female?"
 )
-print(f"\nYOUR QUESTION IS:\n{question}")
+print(f"\nYOUR QUESTIONS:\n{questions}")
 
 executor = agents.create_sql_agent(
     llm=llm,
@@ -39,5 +40,5 @@ executor = agents.create_sql_agent(
     agent_type=agents.AgentType.ZERO_SHOT_REACT_DESCRIPTION,
     verbose=True,
 )
-result = executor.run(question)
-print(f"\nTHE ANSWER TO YOUR QUESTION IS:\n{result}\n")
+result = executor.invoke({"input": questions})
+print(f"\nAND THE ANSWERS:\n{result.get('output')}\n")
