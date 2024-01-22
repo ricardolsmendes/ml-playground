@@ -82,7 +82,7 @@ db = utilities.SQLDatabase.from_uri("sqlite:///insurance.db")
 # A lower temperature will result in more predictable output, while a higher temperature
 # will result in more random output. The temperature parameter is set between 0 and 1,
 # with 0 being the most predictable and 1 being the most random.
-llm = ModelFactory.make_openai(temperature=0)
+llm = ModelFactory.make_llama_2(temperature=0)
 
 chain = sql.SQLDatabaseChain.from_llm(llm, db, verbose=True)
 
