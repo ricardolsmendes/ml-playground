@@ -3,8 +3,8 @@ import sqlite3
 from typing import Any
 
 import dotenv
-import langchain
 from langchain_community import utilities
+from langchain_community.llms import huggingface_pipeline
 from langchain_experimental import sql
 import langchain_openai
 import pandas as pd
@@ -49,7 +49,7 @@ class ModelFactory:
             eos_token_id=tokenizer.eos_token_id,
         )
 
-        return langchain.HuggingFacePipeline(
+        return huggingface_pipeline.HuggingFacePipeline(
             pipeline=pipeline, model_kwargs={"temperature": temperature}
         )
 
