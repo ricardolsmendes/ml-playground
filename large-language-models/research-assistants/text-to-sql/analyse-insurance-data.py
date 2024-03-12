@@ -31,14 +31,11 @@ class ModelFactory:
         :return: the Llama 2 model
         """
         tokenizer = transformers.AutoTokenizer.from_pretrained(
-            cls._LLAMA2_MODEL_NAME,
-            token=os.environ.get("HUGGING_FACE_ACCESS_TOKEN"),
-            use_fast=True,
+            cls._LLAMA2_MODEL_NAME, token=os.environ.get("HUGGING_FACE_ACCESS_TOKEN")
         )
 
         model = transformers.AutoModelForCausalLM.from_pretrained(
             cls._LLAMA2_MODEL_NAME,
-            trust_remote_code=True,
             token=os.environ.get("HUGGING_FACE_ACCESS_TOKEN"),
             torch_dtype=torch.float16,
             device_map="auto",
@@ -47,10 +44,7 @@ class ModelFactory:
         generation_config = transformers.GenerationConfig.from_pretrained(
             cls._LLAMA2_MODEL_NAME
         )
-        generation_config.max_new_tokens = 1024
         generation_config.temperature = temperature
-        generation_config.top_p = 0.95
-        generation_config.do_sample = True
         generation_config.repetition_penalty = 1.15
 
         pipeline = transformers.pipeline(
