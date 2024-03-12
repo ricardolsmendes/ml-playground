@@ -6,6 +6,7 @@ import dotenv
 from langchain_community import utilities
 from langchain_community.llms import huggingface_pipeline
 from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
+from langchain_core.language_models.llms import BaseLLM
 from langchain_experimental import sql
 import langchain_openai
 from langchain_openai import OpenAI
@@ -19,7 +20,15 @@ class ModelFactory:
     _OPENAI_MODEL_NAME = "gpt-3.5-turbo-instruct"
 
     @classmethod
-    def make_llama_2(cls, temperature=0.0001) -> HuggingFacePipeline:
+    def make_model(cls, model_family: str, temperature: float = 0.0001) -> BaseLLM:
+        family_to_factory_map = {
+            "--llama-2": cls.make_llama_2,
+            "--openai": cls.make_openai,
+        }
+        return family_to_factory_map.get(model_family.lower())(temperature)
+
+    @classmethod
+    def make_llama_2(cls, temperature: float = 0.0001) -> HuggingFacePipeline:
         """
         Instantiate the Llama 2 model.
 
@@ -59,7 +68,7 @@ class ModelFactory:
         )
 
     @classmethod
-    def make_openai(cls, temperature=0) -> OpenAI:
+    def make_openai(cls, temperature: float = 0.0001) -> OpenAI:
         """
         Instantiate the OpenAI model.
 
@@ -90,23 +99,16 @@ class SQLiteHelper:
 dotenv.load_dotenv()
 
 # Instantiate the Large Language Model.
-model_name = sys.argv[1].lower()
-is_openai_model = model_name == "--openai"
-is_llama_2_model = model_name == "--llama-2"
-llm = (
-    ModelFactory.make_openai()
-    if is_openai_model
-    else ModelFactory.make_llama_2()
-    if is_llama_2_model
-    else None
-)
+llm = ModelFactory.make_model(sys.argv[1])
 
 SQLiteHelper.load_insurance_table()
 db = utilities.SQLDatabase.from_uri("sqlite:///insurance.db")
 chain = sql.SQLDatabaseChain.from_llm(llm, db, verbose=True)
 
 question_1 = "What is the highest charge?"
-# question_2 = "What is the average charge?"
-# question_3 = "What is the group that spends more, male of female?"
+question_2 = "What is the average charge?"
+question_3 = "What group the highest average charges belong to, male of female?"
+questions = [question_1, question_2, question_3]
 
-result = chain.invoke({"query": question_1})
+for question in questions:
+    chain.invoke({"query": question})
