@@ -1,5 +1,13 @@
 # Text-to-SQL Research Assistants powered by Large Language Models
 
+<!-- toc -->
+
+- [Insurance Data Analyser](#insurance-data-analyser)
+  * [OpenAI](#openai)
+  * [Llama 2](#llama-2)
+
+<!-- tocstop -->
+
 ## Insurance Data Analyser
 
 1. `cd large-language-models/research-assistants/text-to-sql`
@@ -24,7 +32,7 @@ Answer:63770.42801
 ### Llama 2
 
 1. Set up an Hugging Face access token by adding a
-   `HUGGING_FACE_ACCESS_TOKEN=<YOUR-KEY>` line to the `.env` file.
+   `HUGGING_FACE_ACCESS_TOKEN=<YOUR-TOKEN>` line to the `.env` file.
 2. `python analyse-insurance-data.py --Llama-2`
 
 The text below brings an example output (formatted to improve readability):
