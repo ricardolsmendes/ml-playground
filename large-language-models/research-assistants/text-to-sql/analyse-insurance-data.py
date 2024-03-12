@@ -1,12 +1,14 @@
 import os
 import sqlite3
-from typing import Any
+import sys
 
 import dotenv
 from langchain_community import utilities
 from langchain_community.llms import huggingface_pipeline
+from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
 from langchain_experimental import sql
 import langchain_openai
+from langchain_openai import OpenAI
 import pandas as pd
 import torch
 import transformers
@@ -14,9 +16,10 @@ import transformers
 
 class ModelFactory:
     _LLAMA2_MODEL_NAME = "meta-llama/Llama-2-7b-chat-hf"
+    _OPENAI_MODEL_NAME = "gpt-3.5-turbo-instruct"
 
     @classmethod
-    def make_llama_2(cls, temperature=0) -> Any:
+    def make_llama_2(cls, temperature=0.0001) -> HuggingFacePipeline:
         """
         Instantiate the Llama 2 model.
 
@@ -28,25 +31,33 @@ class ModelFactory:
         :return: the Llama 2 model
         """
         tokenizer = transformers.AutoTokenizer.from_pretrained(
-            cls._LLAMA2_MODEL_NAME, token=os.environ.get("HUGGING_FACE_ACCESS_TOKEN")
+            cls._LLAMA2_MODEL_NAME,
+            token=os.environ.get("HUGGING_FACE_ACCESS_TOKEN"),
+            use_fast=True,
         )
 
         model = transformers.AutoModelForCausalLM.from_pretrained(
-            cls._LLAMA2_MODEL_NAME, token=os.environ.get("HUGGING_FACE_ACCESS_TOKEN")
+            cls._LLAMA2_MODEL_NAME,
+            trust_remote_code=True,
+            token=os.environ.get("HUGGING_FACE_ACCESS_TOKEN"),
+            torch_dtype=torch.float16,
+            device_map="auto",
         )
+
+        generation_config = transformers.GenerationConfig.from_pretrained(
+            cls._LLAMA2_MODEL_NAME
+        )
+        generation_config.max_new_tokens = 1024
+        generation_config.temperature = temperature
+        generation_config.top_p = 0.95
+        generation_config.do_sample = True
+        generation_config.repetition_penalty = 1.15
 
         pipeline = transformers.pipeline(
             "text-generation",
             model=model,
             tokenizer=tokenizer,
-            torch_dtype=torch.bfloat16,
-            trust_remote_code=True,
-            device_map="auto",
-            max_length=1000,
-            do_sample=True,
-            top_k=10,
-            num_return_sequences=1,
-            eos_token_id=tokenizer.eos_token_id,
+            generation_config=generation_config,
         )
 
         return huggingface_pipeline.HuggingFacePipeline(
@@ -54,7 +65,7 @@ class ModelFactory:
         )
 
     @classmethod
-    def make_openai(cls, temperature=0) -> Any:
+    def make_openai(cls, temperature=0) -> OpenAI:
         """
         Instantiate the OpenAI model.
 
@@ -65,33 +76,43 @@ class ModelFactory:
             random.
         :return: the OpenAI model
         """
-        return langchain_openai.OpenAI(temperature=temperature)
+        return langchain_openai.OpenAI(
+            model_name=cls._OPENAI_MODEL_NAME, temperature=temperature
+        )
+
+
+class SQLiteHelper:
+    @classmethod
+    def load_insurance_table(cls):
+        """
+        Helper method to extract content from a CSV file and load it into a SQLite table.
+        """
+        conn = sqlite3.connect("insurance.db")
+        df = pd.read_csv("datasets/insurance.csv")
+        df.to_sql("insurance", conn, if_exists="replace", index=False)
+        conn.close()
 
 
 dotenv.load_dotenv()
 
-# Utility block to extract content from a CSV file and load it into a SQLite table.
-conn = sqlite3.connect("insurance.db")
-df = pd.read_csv("datasets/insurance.csv")
-df.to_sql("insurance", conn, if_exists="replace", index=False)
-conn.close()
+# Instantiate the Large Language Model.
+model_name = sys.argv[1].lower()
+is_openai_model = model_name == "--openai"
+is_llama_2_model = model_name == "--llama-2"
+llm = (
+    ModelFactory.make_openai()
+    if is_openai_model
+    else ModelFactory.make_llama_2()
+    if is_llama_2_model
+    else None
+)
 
+SQLiteHelper.load_insurance_table()
 db = utilities.SQLDatabase.from_uri("sqlite:///insurance.db")
-# Instantiate the OpenAI model.
-# Pass the "temperature" parameter which controls the RANDOMNESS of the model's output.
-# A lower temperature will result in more predictable output, while a higher temperature
-# will result in more random output. The temperature parameter is set between 0 and 1,
-# with 0 being the most predictable and 1 being the most random.
-llm = ModelFactory.make_llama_2(temperature=0)
-
 chain = sql.SQLDatabaseChain.from_llm(llm, db, verbose=True)
 
-questions = (
-    "What is the highest charge?"
-    " What is the average charge?"
-    " What is the group that spends more, male of female?"
-)
-print(f"\nYOUR QUESTIONS:\n{questions}")
+question_1 = "What is the highest charge?"
+# question_2 = "What is the average charge?"
+# question_3 = "What is the group that spends more, male of female?"
 
-result = chain.invoke({"query": questions})
-print(f"\nAND THE ANSWERS:\n{result.get('result')}\n")
+result = chain.invoke({"query": question_1})
