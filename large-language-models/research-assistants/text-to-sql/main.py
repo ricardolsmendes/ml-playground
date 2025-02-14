@@ -1,13 +1,13 @@
 import dotenv
 
-import agent
+import assistant
 import sqlite_helper
 
 
 def run_insurance_assistant() -> None:
     table_name = "insurance"
     sqlite_helper.SQLiteHelper.load_table(table_name)
-    insurance_assistant = agent.Agent(
+    insurance_assistant = assistant.Assistant(
         f"sqlite:///{table_name}.db", "gpt-4o-mini", "openai"
     )
 
