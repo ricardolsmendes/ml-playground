@@ -48,7 +48,7 @@ class DatabaseHelper:
         return self.execute_query(query, {"schema": schema, "table_name": table_name})
 
     def get_sample_data(
-        self, schema: str, table_name: str, limit: int = 100
+        self, schema: str, table_name: str, limit: int = 30
     ) -> DataFrame:
         query = f"""
         SELECT *

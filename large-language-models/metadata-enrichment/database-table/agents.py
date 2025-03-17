@@ -1,6 +1,7 @@
-from typing import Mapping
+from typing import List, Mapping
 
 from langchain import chat_models
+from pandas import DataFrame
 
 from postgres_helper import DatabaseHelper
 
@@ -11,7 +12,16 @@ class TableMetadataEnrichmentAgent:
         self._db_helper = db_helper
         self._llm = chat_models.init_chat_model("gpt-4o-mini", model_provider="openai")
 
-    def _generate_description(self, table_info, sample_data) -> Mapping[str, str]:
+    @classmethod
+    def _convert_data_frame_to_plain_text(cls, df: DataFrame) -> List[str]:
+        return [
+            ", ".join([f"{col}: {row[col]}" for col in df.columns])
+            for _, row in df.iterrows()
+        ]
+
+    def _generate_description(
+        self, table_info: DataFrame, sample_data: DataFrame
+    ) -> Mapping[str, str]:
         prompt = (
             "Given the following rules, table information and sample data,"
             " provide a human-friendly description for the table."
@@ -21,9 +31,9 @@ class TableMetadataEnrichmentAgent:
             "2. Do not include any sensitive information in the answer.\n"
             "3. Include 3 examples of data from the table in the answer.\n"
             "\n\n"
-            f"Table info: {table_info}"
+            f"Table info: {self._convert_data_frame_to_plain_text(table_info)}"
             f"\n\n"
-            f"Sample data: {sample_data}"
+            f"Sample data: {self._convert_data_frame_to_plain_text(sample_data)}"
         )
         return {"answer": self._llm.invoke(prompt).content}
 
@@ -40,27 +50,14 @@ class TableMetadataEnrichmentAgent:
         ]:
             table_info = self._db_helper.get_table_info(schema, table)
             sample_data = self._db_helper.get_sample_data(schema, table)
-
-            plain_text_table_info = [
-                ", ".join([f"{col}: {row[col]}" for col in table_info.columns])
-                for _, row in table_info.iterrows()
-            ]
-            plain_text_sample_data = [
-                ", ".join([f"{col}: {row[col]}" for col in sample_data.columns])
-                for _, row in sample_data.iterrows()
-            ]
-
-            description = self._generate_description(
-                plain_text_table_info, plain_text_sample_data
-            ).get("answer")
+            description = self._generate_description(table_info, sample_data).get(
+                "answer"
+            )
 
             print(
-                f"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-                f"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
                 f"Table: {table}\n\n"
                 f"Description: {description}\n"
-                f"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-                f"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                f"\n\n"
             )
 
             self._db_helper.set_table_description(schema, table, description)
