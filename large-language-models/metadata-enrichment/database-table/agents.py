@@ -1,4 +1,4 @@
-from typing import List, Mapping
+from typing import List
 
 from langchain import chat_models
 from langchain_core import prompts
@@ -23,18 +23,17 @@ class TableMetadataEnrichmentAgent:
 
     def _generate_description(
         self, table_info: DataFrame, sample_data: DataFrame
-    ) -> Mapping[str, str]:
-        message_list = [
-            ("system", prompt_templates.SYSTEM),
-            ("human", prompt_templates.USER),
-        ]
-        prompt = prompts.ChatPromptTemplate.from_messages(message_list).invoke(
+    ) -> str:
+        generate_description_prompt_template = prompts.ChatPromptTemplate.from_template(
+            prompt_templates.TABLE_DESCRIPTION_SYSTEM_PROMPT
+        )
+        prompt = generate_description_prompt_template.invoke(
             {
                 "table_information": self._convert_data_frame_to_plain_text(table_info),
                 "sample_data": self._convert_data_frame_to_plain_text(sample_data),
             }
         )
-        return {"answer": self._llm.invoke(prompt).content}
+        return self._llm.invoke(prompt).content
 
     def run(self, schema: str) -> None:
         table_df = self._db_helper.list_tables(schema)
@@ -42,9 +41,7 @@ class TableMetadataEnrichmentAgent:
         for table in tables[:5]:
             table_info = self._db_helper.get_table_info(schema, table)
             sample_data = self._db_helper.get_sample_data(schema, table)
-            description = self._generate_description(table_info, sample_data).get(
-                "answer"
-            )
+            description = self._generate_description(table_info, sample_data)
 
             print(f"Table: {table}\n\n" f"Description: {description}\n" f"\n\n")
 
