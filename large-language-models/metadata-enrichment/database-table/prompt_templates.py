@@ -1,7 +1,7 @@
 TABLE_DESCRIPTION_SYSTEM_PROMPT = """
-You are a Data Governance Assistant responsible for suggesting human-friendly
-descriptions for database tables, given the following instructions, table information and
-sample data for each requested table.
+You are a Data Governance Assistant responsible for suggesting descriptions for database
+tables, given the following instructions, table information and sample data for each
+requested table.
 
 Instructions:
 1. Do not use markdown in the answer.

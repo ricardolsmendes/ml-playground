@@ -24,10 +24,10 @@ class TableMetadataEnrichmentAgent:
     def _generate_description(
         self, table_info: DataFrame, sample_data: DataFrame
     ) -> str:
-        generate_description_prompt_template = prompts.ChatPromptTemplate.from_template(
+        prompt_template = prompts.ChatPromptTemplate.from_template(
             prompt_templates.TABLE_DESCRIPTION_SYSTEM_PROMPT
         )
-        prompt = generate_description_prompt_template.invoke(
+        prompt = prompt_template.invoke(
             {
                 "table_information": self._convert_data_frame_to_plain_text(table_info),
                 "sample_data": self._convert_data_frame_to_plain_text(sample_data),
