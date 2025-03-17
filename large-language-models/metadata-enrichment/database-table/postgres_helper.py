@@ -17,7 +17,8 @@ class DatabaseHelper:
             "postgresql+psycopg2://"
             f"{os.getenv('DATABASE_USER')}:"
             f"{os.getenv('DATABASE_PASSWORD')}@"
-            f"{os.getenv('DATABASE_HOST')}/"
+            f"{os.getenv('DATABASE_HOST')}:"
+            f"{os.getenv('DATABASE_PORT')}/"
             f"{os.getenv('DATABASE_NAME')}"
         )
 
@@ -33,8 +34,7 @@ class DatabaseHelper:
         FROM information_schema.tables
         WHERE table_schema = %(schema)s
         -- ORDER BY table_name;
-        ORDER BY RANDOM()
-        LIMIT 6;
+        ORDER BY RANDOM();
         """
         return self.execute_query(query, {"schema": schema})
 
