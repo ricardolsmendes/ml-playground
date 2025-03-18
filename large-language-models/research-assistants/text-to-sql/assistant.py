@@ -40,9 +40,11 @@ class Assistant:
         """
         print(f"\nQUESTION:\n{question}\n")
 
-        for step in self._compiled_graph.stream(
+        steps = self._compiled_graph.stream(
             {"question": question}, stream_mode="updates"
-        ):
-            for step_key, step_value in step.items():
-                for state, state_value in step_value.items():
-                    print(f"- {state}:\n{state_value}")
+        )
+
+        for step in steps:
+            for _, state in step.items():
+                for key, value in state.items():
+                    print(f"- {key}:\n{value}")

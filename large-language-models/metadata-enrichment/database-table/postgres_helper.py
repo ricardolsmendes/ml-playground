@@ -61,4 +61,4 @@ class DatabaseHelper:
     def set_table_description(
         self, schema: str, table_name: str, description: str
     ) -> None:
-        pass
+        print(f"Table: {table_name}\n\n" f"Description: {description}\n" f"\n\n")

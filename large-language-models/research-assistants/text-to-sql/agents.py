@@ -41,11 +41,11 @@ class WriteQueryAgent:
                 "dialect": db.dialect,
                 "top_k": 10,
                 "table_info": db.get_table_info(),
-                "input": state["question"],
+                "input": state.get("question"),
             }
         )
         structured_llm = llm.with_structured_output(QueryOutput)
-        return {"query": structured_llm.invoke(prompt)["query"]}
+        return {"query": structured_llm.invoke(prompt).get("query")}
 
 
 class ExecuteQueryAgent:
@@ -56,7 +56,7 @@ class ExecuteQueryAgent:
         Execute SQL query.
         """
         execute_query_tool = tools.QuerySQLDatabaseTool(db=db)
-        return {"result": execute_query_tool.invoke(state["query"])}
+        return {"result": execute_query_tool.invoke(state.get("query"))}
 
 
 class GenerateAnswerAgent:
@@ -70,8 +70,8 @@ class GenerateAnswerAgent:
             "Given the following user question, corresponding SQL query,"
             " and SQL result, answer the user question."
             "\n\n"
-            f"Question: {state['question']}\n"
-            f"SQL Query: {state['query']}\n"
-            f"SQL Result: {state['result']}"
+            f"Question: {state.get('question')}\n"
+            f"SQL Query: {state.get('query')}\n"
+            f"SQL Result: {state.get('result')}"
         )
         return {"answer": llm.invoke(prompt).content}
