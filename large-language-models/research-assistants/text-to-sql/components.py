@@ -28,7 +28,7 @@ class QueryOutput(TypedDict):
     query: Annotated[str, ..., "Syntactically valid SQL query."]
 
 
-class WriteQueryAgent:
+class QueryGenerator:
 
     def __init__(self):
         # See https://smith.langchain.com/hub/langchain-ai/sql-query-system-prompt
@@ -51,7 +51,7 @@ class WriteQueryAgent:
         return {"query": structured_llm.invoke(prompt).get("query")}
 
 
-class ExecuteQueryAgent:
+class QueryExecutor:
 
     @classmethod
     def run(cls, db: SQLDatabase, state: State) -> Dict[str, str]:
@@ -62,7 +62,7 @@ class ExecuteQueryAgent:
         return {"result": execute_query_tool.invoke(state.get("query"))}
 
 
-class GenerateAnswerAgent:
+class AnswerGenerator:
 
     @classmethod
     def run(cls, state: State, llm: BaseChatModel) -> Dict[str, str]:

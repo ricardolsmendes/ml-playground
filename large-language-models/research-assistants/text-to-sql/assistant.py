@@ -7,8 +7,8 @@ from langchain import chat_models
 from langchain_community import utilities
 from langgraph import graph
 
-import agents
-from agents import State
+import components
+from components import State
 
 
 class Assistant:
@@ -17,22 +17,22 @@ class Assistant:
         self._db = utilities.SQLDatabase.from_uri(db_uri)
         self._llm = chat_models.init_chat_model(model, model_provider=model_provider)
 
-        self._write_query_agent = agents.WriteQueryAgent()
+        self._query_generator = components.QueryGenerator()
 
         graph_builder = graph.StateGraph(State).add_sequence(
-            [self._write_query, self._execute_query, self._generate_answer]
+            [self._generate_query, self._execute_query, self._generate_answer]
         )
-        graph_builder.add_edge(graph.START, "_write_query")
+        graph_builder.add_edge(graph.START, "_generate_query")
         self._graph = graph_builder.compile()
 
-    def _write_query(self, state: State) -> Dict[str, str]:
-        return self._write_query_agent.run(self._db, state, self._llm)
+    def _generate_query(self, state: State) -> Dict[str, str]:
+        return self._query_generator.run(self._db, state, self._llm)
 
     def _execute_query(self, state: State) -> Dict[str, str]:
-        return agents.ExecuteQueryAgent.run(self._db, state)
+        return components.QueryExecutor.run(self._db, state)
 
     def _generate_answer(self, state: State) -> Dict[str, str]:
-        return agents.GenerateAnswerAgent.run(state, self._llm)
+        return components.AnswerGenerator.run(state, self._llm)
 
     def run(self, question: str):
         """

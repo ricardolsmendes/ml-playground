@@ -4,14 +4,14 @@ from langgraph import graph
 from langgraph.checkpoint import memory
 from pandas import DataFrame
 
-import agents
-from agents import State
+import components
+from components import State
 
 
 class MetadataEnrichmentAssistant:
 
     def __init__(self):
-        self._metadata_enrichment_agent = agents.MetadataEnrichmentAgent()
+        self._metadata_enrichment_agent = components.MetadataBooster()
 
         checkpointer = memory.MemorySaver()
         graph_builder = graph.StateGraph(State).add_sequence(
@@ -27,7 +27,7 @@ class MetadataEnrichmentAssistant:
 
     @classmethod
     def _accept_content(cls, state: State) -> Mapping[str, bool]:
-        return agents.ContentAcceptanceHelper.accept()
+        return components.ContentAcceptanceHelper.accept()
 
     @classmethod
     def _convert_df_to_text(cls, df: DataFrame) -> List[str]:

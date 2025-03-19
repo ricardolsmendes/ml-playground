@@ -15,7 +15,7 @@ class State(TypedDict):
     accepted: bool
 
 
-class MetadataEnrichmentAgent:
+class MetadataBooster:
 
     def __init__(self):
         self._llm = chat_models.init_chat_model("gpt-4o-mini", model_provider="openai")
