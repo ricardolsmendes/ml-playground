@@ -23,7 +23,7 @@ class Assistant:
             [self._write_query, self._execute_query, self._generate_answer]
         )
         graph_builder.add_edge(graph.START, "_write_query")
-        self._compiled_graph = graph_builder.compile()
+        self._graph = graph_builder.compile()
 
     def _write_query(self, state: State) -> Dict[str, str]:
         return self._write_query_agent.run(self._db, state, self._llm)
@@ -40,9 +40,9 @@ class Assistant:
         """
         print(f"\nQUESTION:\n{question}\n")
 
-        for step in self._compiled_graph.stream(
-            {"question": question}, stream_mode="updates"
-        ):
-            for step_key, step_value in step.items():
-                for state, state_value in step_value.items():
-                    print(f"- {state}:\n{state_value}")
+        steps = self._graph.stream({"question": question}, stream_mode="updates")
+
+        for step in steps:
+            for _, result in step.items():
+                for key, value in result.items():
+                    print(f"- {key}:\n{value}")
