@@ -7,7 +7,10 @@ from langchain import hub
 from langchain.chat_models.base import BaseChatModel
 from langchain_community import tools
 from langchain_community.utilities.sql_database import SQLDatabase
+from langchain_core import prompts
 from typing_extensions import Annotated, TypedDict
+
+import prompt_templates
 
 
 class State(TypedDict):
@@ -66,12 +69,13 @@ class GenerateAnswerAgent:
         """
         Answer question using retrieved information as context.
         """
-        prompt = (
-            "Given the following user question, corresponding SQL query,"
-            " and SQL result, answer the user question."
-            "\n\n"
-            f"Question: {state.get('question')}\n"
-            f"SQL Query: {state.get('query')}\n"
-            f"SQL Result: {state.get('result')}"
+        prompt_template = prompts.ChatPromptTemplate.from_template(
+            prompt_templates.SQL_ANSWER_SYSTEM_PROMPT
         )
+        prompt_input = {
+            "question": state.get("question"),
+            "query": state.get("query"),
+            "result": state.get("result"),
+        }
+        prompt = prompt_template.invoke(prompt_input)
         return {"answer": llm.invoke(prompt).content}
