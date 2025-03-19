@@ -1,5 +1,6 @@
 # Large Language Models playground
 
-1. [Research Assistants](./research-assistants)
+1. [Metadata Enrichment Assistants](./metadata-enrichment)
+2. [Research Assistants](./research-assistants)
 
 [<< back](..)
