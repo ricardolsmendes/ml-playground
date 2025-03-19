@@ -61,7 +61,8 @@ LIMIT 10;
 - result:
 [('male', 13956.751177721893), ('female', 12569.578843835347)]
 - answer:
-The group with the highest average charges is male, with an average charge of approximately 13956.75.
+The group with the highest average charges is male, with an average charge of
+approximately 13956.75.
 ```
 
 [<< back](..)
