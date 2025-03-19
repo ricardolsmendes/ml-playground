@@ -25,7 +25,15 @@ class DatabaseHelper:
     def disconnect(self) -> None:
         self._engine.dispose()
 
-    def execute_query(self, query: str, params: Mapping[str, Any] = None) -> DataFrame:
+    def _execute_query(self, query: str, params: Mapping[str, Any] = None) -> None:
+        con = self._engine.connect()
+        con.execute(sqlalchemy.text(query), params)
+        con.commit()
+        con.close()
+
+    def _read_query_results(
+        self, query: str, params: Mapping[str, Any] = None
+    ) -> DataFrame:
         return pd.read_sql_query(sql=query, con=self._engine, params=params)
 
     def list_tables(self, schema: str) -> DataFrame:
@@ -36,29 +44,27 @@ class DatabaseHelper:
         -- ORDER BY table_name;
         ORDER BY RANDOM();
         """
-        return self.execute_query(query, {"schema": schema})
+        return self._read_query_results(query, {"schema": schema})
 
-    def get_table_info(self, schema: str, table_name: str) -> DataFrame:
+    def get_columns_technical_metadata(self, schema: str, table: str) -> DataFrame:
         query = """
         SELECT column_name, data_type, column_default, is_nullable
         FROM information_schema.columns
         WHERE table_schema = %(schema)s
-            AND table_name = %(table_name)s;
+            AND table_name = %(table)s;
         """
-        return self.execute_query(query, {"schema": schema, "table_name": table_name})
+        return self._read_query_results(query, {"schema": schema, "table": table})
 
-    def get_sample_data(
-        self, schema: str, table_name: str, limit: int = 30
-    ) -> DataFrame:
+    def get_sample_data(self, schema: str, table: str, limit: int = 30) -> DataFrame:
         query = f"""
         SELECT *
-        FROM {schema}.{table_name}
+        FROM {schema}.{table}
         ORDER BY RANDOM()
         LIMIT %(limit)s;
         """
-        return self.execute_query(query, {"limit": limit})
+        return self._read_query_results(query, {"limit": limit})
 
-    def set_table_description(
-        self, schema: str, table_name: str, description: str
-    ) -> None:
-        print(f"Table: {table_name}\n\n" f"Description: {description}\n" f"\n\n")
+    def set_table_description(self, schema: str, table: str, description: str) -> None:
+        query = f"COMMENT ON TABLE {schema}.{table} IS :description;"
+        self._execute_query(query, {"description": description})
+        print(f"Comment successfully set on table {schema}.{table}.")

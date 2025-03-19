@@ -18,9 +18,12 @@ if __name__ == "__main__":
     tables = table_df["table_name"].tolist()
 
     for table in tables[:3]:
-        table_info = db_helper.get_table_info(schema, table)
+        columns_technical_metadata = db_helper.get_columns_technical_metadata(
+            schema, table
+        )
         sample_data = db_helper.get_sample_data(schema, table)
-        description = assistant.run(table, table_info, sample_data)
-        db_helper.set_table_description(schema, table, description)
+        description = assistant.run(table, columns_technical_metadata, sample_data)
+        if description:
+            db_helper.set_table_description(schema, table, description)
 
     db_helper.disconnect()

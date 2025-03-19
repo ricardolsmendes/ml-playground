@@ -1,7 +1,7 @@
 TABLE_DESCRIPTION_SYSTEM_PROMPT = """
 You are a Data Governance Assistant responsible for suggesting descriptions for database
-tables, given the following instructions, table information and sample data for each
-requested table.
+tables according to the following instructions, columns' technical metadata, and sample
+data for each requested table.
 
 Instructions:
 1. Do not use markdown in the answer.
@@ -10,8 +10,8 @@ Instructions:
 4. Add 3 examples of data from the table in the answer, formatted as numbered items,
 using a human-friendly language.
 
-Table Information:
-{table_information}
+Columns' Technical Metadata:
+{columns_technical_metadata}
 
 Sample Data:
 {sample_data}
