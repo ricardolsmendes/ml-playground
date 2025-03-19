@@ -3,15 +3,14 @@ from typing_extensions import TypedDict
 
 from langchain import chat_models
 from langchain_core import prompts
-from pandas import DataFrame
 
 import prompt_templates
 
 
 class State(TypedDict):
     table: str
-    columns_technical_metadata: DataFrame
-    sample_data: DataFrame
+    columns_technical_metadata: str
+    sample_data: str
     description: str
     accepted: bool
 
